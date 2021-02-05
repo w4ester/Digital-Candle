@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a Vigil -- Digital-Candle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Digital-Candle</a></h1>
+            <p class="tagline">Light a candle. Be present.</p>
+        </header>
+
+        <div class="create-form">
+            <h2>Create a Vigil</h2>
+
+            <form method="POST" action="/create">
+                <div class="form-group">
+                    <label for="name">Vigil Name</label>
+                    <input type="text" id="name" name="name" required
+                           placeholder="e.g. For Our Neighbors" maxlength="100">
+                </div>
+
+                <button type="submit" class="create-submit">Create Vigil</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
