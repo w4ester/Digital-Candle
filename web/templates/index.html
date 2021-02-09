@@ -3,24 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital-Candle</title>
+    <title>Digital-Candle{% if vigil %} -- {{ vigil.name }}{% endif %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Digital-Candle</h1>
+            <h1><a href="/">Digital-Candle</a></h1>
             <p class="tagline">Light a candle. Be present.</p>
         </header>
 
-        <div class="candle-single">
-            <div class="flame">
-                <div class="flame-inner"></div>
-            </div>
-            <div class="wax"></div>
+        {% if vigil %}
+        <div class="vigil-header">
+            <h2>{{ vigil.name }}</h2>
         </div>
 
         <button id="light-btn" class="light-button">Light a Candle</button>
+
+        <div class="candle-grid" id="candle-grid">
+            {% for candle in candles %}
+            <div class="candle" data-id="{{ candle.id }}">
+                <div class="flame">
+                    <div class="flame-inner"></div>
+                </div>
+                <div class="wax"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="vigil-list">
+            <h2>Active Vigils</h2>
+            <a href="/create" class="create-btn">Create a Vigil</a>
+
+            {% if vigils %}
+            <div class="vigil-cards">
+                {% for v in vigils %}
+                <a href="/vigil/{{ v.id }}" class="vigil-card">
+                    <h3>{{ v.name }}</h3>
+                    <span>{{ v.candle_count or 0 }} candles</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No vigils yet. Be the first to create one.</p>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>
