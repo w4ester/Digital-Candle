@@ -64,7 +64,7 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     background: var(--candle-gold);
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     position: relative;
-    animation: flicker 0.3s ease-in-out infinite alternate;
+    animation: flicker 0.8s ease-in-out infinite alternate;
     box-shadow: 0 0 10px var(--candle-gold), 0 0 20px rgba(201, 162, 39, 0.3);
 }
 
