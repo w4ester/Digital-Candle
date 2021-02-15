@@ -3,6 +3,7 @@
 :root {
     --candle-gold: #c9a227;
     --candle-gold-light: #e8c847;
+    --candle-orange: #e8912e;
     --bg-dark: #1a1a1a;
     --bg-card: #242424;
     --text-primary: #e0e0e0;
@@ -18,11 +19,7 @@ body {
     min-height: 100vh;
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-}
+.container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
 
 header { text-align: center; margin-bottom: 2rem; }
 header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8rem; }
@@ -56,6 +53,12 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     display: flex;
     flex-direction: column;
     align-items: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .flame {
@@ -74,14 +77,32 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     left: 3px;
     width: 8px;
     height: 12px;
-    background: #e8912e;
+    background: var(--candle-orange);
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     opacity: 0.8;
 }
 
 @keyframes flicker {
-    0% { transform: scale(1) rotate(-1deg); }
-    100% { transform: scale(1.05) rotate(1deg); }
+    0% {
+        transform: scale(1) rotate(-1deg);
+        opacity: 1;
+    }
+    25% {
+        transform: scale(1.02) rotate(1deg);
+        opacity: 0.95;
+    }
+    50% {
+        transform: scale(0.98) rotate(-0.5deg);
+        opacity: 1;
+    }
+    75% {
+        transform: scale(1.01) rotate(0.5deg);
+        opacity: 0.97;
+    }
+    100% {
+        transform: scale(1) rotate(1deg);
+        opacity: 0.95;
+    }
 }
 
 .wax {
@@ -91,7 +112,6 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     border-radius: 0 0 2px 2px;
 }
 
-/* Vigil listing */
 .vigil-list { text-align: center; }
 .vigil-list h2 { color: var(--candle-gold); margin-bottom: 1rem; }
 .create-btn {
@@ -100,7 +120,6 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     text-decoration: none;
     padding: 0.5rem 1.2rem;
     border-radius: 4px;
-    font-size: 0.9rem;
     font-weight: 600;
 }
 .vigil-cards { display: grid; gap: 1rem; margin-top: 1rem; }
@@ -115,7 +134,6 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
 .vigil-card:hover { border-color: var(--candle-gold); }
 .vigil-card h3 { color: var(--candle-gold); margin-bottom: 0.3rem; }
 
-/* Create form */
 .create-form { max-width: 500px; margin: 0 auto; text-align: left; }
 .create-form h2 { color: var(--candle-gold); margin-bottom: 1rem; }
 .form-group { margin-bottom: 1.2rem; }
