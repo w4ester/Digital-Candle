@@ -16,11 +16,31 @@
         <div class="create-form">
             <h2>Create a Vigil</h2>
 
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+
             <form method="POST" action="/create">
                 <div class="form-group">
                     <label for="name">Vigil Name</label>
                     <input type="text" id="name" name="name" required
                            placeholder="e.g. For Our Neighbors" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label>Theme</label>
+                    <div class="theme-options">
+                        {% for key, theme in themes.items() %}
+                        <label class="theme-option">
+                            <input type="radio" name="theme" value="{{ key }}"
+                                   {% if key == 'solidarity' %}checked{% endif %}>
+                            <span class="theme-label">
+                                <strong>{{ theme.name }}</strong>
+                                <small>{{ theme.description }}</small>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
 
                 <button type="submit" class="create-submit">Create Vigil</button>
