@@ -31,10 +31,18 @@
             {% endfor %}
         </div>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+        <script src="{{ url_for('static', filename='candle.js') }}"></script>
+        <script>
+            initVigil("{{ vigil.id }}");
+        </script>
+
         {% else %}
         <div class="vigil-list">
-            <h2>Active Vigils</h2>
-            <a href="/create" class="create-btn">Create a Vigil</a>
+            <div class="list-header">
+                <h2>Active Vigils</h2>
+                <a href="/create" class="create-btn">Create a Vigil</a>
+            </div>
 
             {% if vigils %}
             <div class="vigil-cards">
@@ -46,7 +54,10 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p>No vigils yet. Be the first to create one.</p>
+            <div class="empty-state">
+                <p>No vigils yet. Be the first to create one.</p>
+                <a href="/create" class="create-btn">Create a Vigil</a>
+            </div>
             {% endif %}
         </div>
         {% endif %}
