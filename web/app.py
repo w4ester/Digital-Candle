@@ -1,7 +1,7 @@
 """
 Digital-Candle web server.
 
-Flask + SocketIO server for digital vigil candles.
+Flask + SocketIO server for real-time vigil candles.
 """
 
 import argparse
@@ -9,7 +9,7 @@ import sys
 import os
 
 from flask import Flask, render_template, request, redirect, url_for
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -60,19 +60,35 @@ def vigil_page(vigil_id):
 @socketio.on("connect")
 def handle_connect():
     """Handle new WebSocket connection."""
-    print(f"Client connected: {request.sid}")
+    pass
+
+
+@socketio.on("join_vigil")
+def handle_join_vigil(data):
+    """Handle a user joining a vigil room."""
+    vigil_id = data.get("vigil_id")
+    if vigil_id:
+        join_room(vigil_id)
+
+
+@socketio.on("leave_vigil")
+def handle_leave_vigil(data):
+    """Handle a user leaving a vigil room."""
+    vigil_id = data.get("vigil_id")
+    if vigil_id:
+        leave_room(vigil_id)
 
 
 @socketio.on("light_candle")
 def handle_light_candle(data):
-    """Handle a candle lighting request via WebSocket."""
+    """Handle a candle lighting request."""
     vigil_id = data.get("vigil_id")
     if not vigil_id:
         return
     ip = request.remote_addr or "unknown"
     candle = create_candle(vigil_id, ip)
     save_candle(candle)
-    emit("candle_lit", {"candle_id": candle["id"]}, broadcast=True)
+    emit("candle_lit", {"candle_id": candle["id"]}, room=vigil_id)
 
 
 def parse_args():

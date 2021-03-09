@@ -12,6 +12,7 @@ function initVigil(vigilId) {
 
     socket.on("connect", function() {
         console.log("Connected to server");
+        socket.emit("join_vigil", { vigil_id: vigilId });
     });
 
     socket.on("candle_lit", function(data) {
