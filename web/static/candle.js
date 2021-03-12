@@ -7,7 +7,6 @@ var currentVigil = null;
 
 function initVigil(vigilId) {
     currentVigil = vigilId;
-
     socket = io();
 
     socket.on("connect", function() {
@@ -17,6 +16,10 @@ function initVigil(vigilId) {
 
     socket.on("candle_lit", function(data) {
         addCandleToGrid(data);
+    });
+
+    socket.on("presence_update", function(data) {
+        updatePresenceCount(data.count);
     });
 
     var lightBtn = document.getElementById("light-btn");
@@ -51,5 +54,12 @@ function addCandleToGrid(data) {
         grid.insertBefore(candle, grid.firstChild);
     } else {
         grid.appendChild(candle);
+    }
+}
+
+function updatePresenceCount(count) {
+    var el = document.getElementById("presence-count");
+    if (el) {
+        el.textContent = count;
     }
 }

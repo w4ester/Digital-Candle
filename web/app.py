@@ -25,6 +25,9 @@ app.config["SECRET_KEY"] = "digital-candle-secret"
 
 socketio = SocketIO(app, async_mode="eventlet")
 
+# Track presence per vigil
+presence = {}
+
 
 @app.route("/")
 def index():
@@ -54,7 +57,9 @@ def vigil_page(vigil_id):
     if not vigil:
         return redirect(url_for("index"))
     candles = get_active_candles(vigil_id)
-    return render_template("index.html", vigil=vigil, candles=candles, themes=get_themes())
+    presence_count = len(presence.get(vigil_id, set()))
+    return render_template("index.html", vigil=vigil, candles=candles,
+                           themes=get_themes(), presence_count=presence_count)
 
 
 @socketio.on("connect")
@@ -67,16 +72,27 @@ def handle_connect():
 def handle_join_vigil(data):
     """Handle a user joining a vigil room."""
     vigil_id = data.get("vigil_id")
-    if vigil_id:
-        join_room(vigil_id)
+    if not vigil_id:
+        return
+    join_room(vigil_id)
+    if vigil_id not in presence:
+        presence[vigil_id] = set()
+    presence[vigil_id].add(request.sid)
+    count = len(presence[vigil_id])
+    emit("presence_update", {"count": count}, room=vigil_id)
 
 
 @socketio.on("leave_vigil")
 def handle_leave_vigil(data):
     """Handle a user leaving a vigil room."""
     vigil_id = data.get("vigil_id")
-    if vigil_id:
-        leave_room(vigil_id)
+    if not vigil_id:
+        return
+    leave_room(vigil_id)
+    if vigil_id in presence:
+        presence[vigil_id].discard(request.sid)
+        count = len(presence[vigil_id])
+        emit("presence_update", {"count": count}, room=vigil_id)
 
 
 @socketio.on("light_candle")
@@ -89,6 +105,16 @@ def handle_light_candle(data):
     candle = create_candle(vigil_id, ip)
     save_candle(candle)
     emit("candle_lit", {"candle_id": candle["id"]}, room=vigil_id)
+
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    """Handle WebSocket disconnection."""
+    for vigil_id in list(presence.keys()):
+        if request.sid in presence[vigil_id]:
+            presence[vigil_id].discard(request.sid)
+            count = len(presence[vigil_id])
+            socketio.emit("presence_update", {"count": count}, room=vigil_id)
 
 
 def parse_args():

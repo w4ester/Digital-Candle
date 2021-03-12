@@ -16,6 +16,11 @@
         {% if vigil %}
         <div class="vigil-header">
             <h2>{{ vigil.name }}</h2>
+            <div class="vigil-meta">
+                <span class="presence">
+                    <span id="presence-count">{{ presence_count or 0 }}</span> watching
+                </span>
+            </div>
         </div>
 
         <button id="light-btn" class="light-button">Light a Candle</button>
