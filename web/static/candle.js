@@ -18,6 +18,10 @@ function initVigil(vigilId) {
         addCandleToGrid(data);
     });
 
+    socket.on("candle_expired", function(data) {
+        removeCandleFromGrid(data.candle_id);
+    });
+
     socket.on("presence_update", function(data) {
         updatePresenceCount(data.count);
     });
@@ -55,6 +59,18 @@ function addCandleToGrid(data) {
     } else {
         grid.appendChild(candle);
     }
+}
+
+function removeCandleFromGrid(candleId) {
+    var candle = document.querySelector('.candle[data-id="' + candleId + '"]');
+    if (!candle) return;
+
+    candle.classList.add("fading");
+    setTimeout(function() {
+        if (candle.parentNode) {
+            candle.parentNode.removeChild(candle);
+        }
+    }, 2000);
 }
 
 function updatePresenceCount(count) {

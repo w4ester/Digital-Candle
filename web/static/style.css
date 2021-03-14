@@ -158,3 +158,12 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     cursor: pointer;
     width: 100%;
 }
+
+.candle.fading {
+    animation: fadeOut 2s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
