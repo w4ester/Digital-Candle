@@ -7,11 +7,16 @@ var currentVigil = null;
 
 function initVigil(vigilId) {
     currentVigil = vigilId;
-    socket = io();
+    socket = io({ reconnection: false });
 
     socket.on("connect", function() {
         console.log("Connected to server");
         socket.emit("join_vigil", { vigil_id: vigilId });
+    });
+
+    socket.on("disconnect", function() {
+        console.log("Disconnected -- reconnecting immediately");
+        socket.connect();
     });
 
     socket.on("candle_lit", function(data) {
@@ -64,7 +69,6 @@ function addCandleToGrid(data) {
 function removeCandleFromGrid(candleId) {
     var candle = document.querySelector('.candle[data-id="' + candleId + '"]');
     if (!candle) return;
-
     candle.classList.add("fading");
     setTimeout(function() {
         if (candle.parentNode) {
@@ -75,7 +79,5 @@ function removeCandleFromGrid(candleId) {
 
 function updatePresenceCount(count) {
     var el = document.getElementById("presence-count");
-    if (el) {
-        el.textContent = count;
-    }
+    if (el) { el.textContent = count; }
 }
