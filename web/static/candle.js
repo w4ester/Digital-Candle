@@ -1,22 +1,32 @@
 /**
  * Digital-Candle client-side SocketIO and candle interactions.
+ * Uses exponential backoff for reconnection -- immediate retry
+ * caused retry storms that overwhelmed the server.
  */
 
 var socket = null;
 var currentVigil = null;
+var reconnectDelay = 1000;
+var maxReconnectDelay = 30000;
 
 function initVigil(vigilId) {
     currentVigil = vigilId;
-    socket = io({ reconnection: false });
+
+    socket = io({
+        reconnection: true,
+        reconnectionDelay: reconnectDelay,
+        reconnectionDelayMax: maxReconnectDelay,
+        reconnectionAttempts: Infinity
+    });
 
     socket.on("connect", function() {
         console.log("Connected to server");
+        reconnectDelay = 1000;
         socket.emit("join_vigil", { vigil_id: vigilId });
     });
 
     socket.on("disconnect", function() {
-        console.log("Disconnected -- reconnecting immediately");
-        socket.connect();
+        console.log("Disconnected from server");
     });
 
     socket.on("candle_lit", function(data) {
