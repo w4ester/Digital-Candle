@@ -167,3 +167,20 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     from { opacity: 1; }
     to { opacity: 0; }
 }
+
+.presence {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-secondary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.connected { background: #4caf50; }
+.status-dot.reconnecting { background: #999; }

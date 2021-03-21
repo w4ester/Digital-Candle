@@ -91,3 +91,13 @@ function updatePresenceCount(count) {
     var el = document.getElementById("presence-count");
     if (el) { el.textContent = count; }
 }
+
+function setConnectionStatus(connected) {
+    var dot = document.getElementById("status-dot");
+    if (!dot) return;
+    if (connected) {
+        dot.className = "status-dot connected";
+    } else {
+        dot.className = "status-dot reconnecting";
+    }
+}
