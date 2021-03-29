@@ -109,7 +109,11 @@ def handle_light_candle(data):
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    """Handle WebSocket disconnection."""
+    """Handle WebSocket disconnection.
+
+    Clean up presence tracking. Important to get this right --
+    browser tab close does not always fire leave_vigil.
+    """
     for vigil_id in list(presence.keys()):
         if request.sid in presence[vigil_id]:
             presence[vigil_id].discard(request.sid)
