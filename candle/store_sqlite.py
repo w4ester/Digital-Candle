@@ -17,6 +17,9 @@ def init_db(db_path=None):
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
 
+    # Enable WAL mode for better concurrent reads
+    cursor.execute("PRAGMA journal_mode=WAL")
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS vigils (
             id TEXT PRIMARY KEY,
