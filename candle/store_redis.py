@@ -106,3 +106,17 @@ def get_active_candles(vigil_id):
             candles.append(data)
 
     return candles
+
+
+def publish_event(channel, event_data):
+    """Publish a SocketIO event via Redis pub/sub."""
+    r = get_conn()
+    r.publish(channel, json.dumps(event_data))
+
+
+def subscribe_events(channel):
+    """Subscribe to SocketIO events via Redis pub/sub."""
+    r = get_conn()
+    pubsub = r.pubsub()
+    pubsub.subscribe(channel)
+    return pubsub
