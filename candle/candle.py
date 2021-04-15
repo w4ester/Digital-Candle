@@ -2,6 +2,8 @@
 Candle state management.
 
 A candle has a lifecycle: created -> lit -> expired.
+Candles burn for a configurable duration (default 24 hours)
+and then fade out.
 """
 
 import time
@@ -30,3 +32,9 @@ def extinguish(candle):
     """Mark a candle as no longer active."""
     candle["active"] = False
     return candle
+
+
+def time_remaining(candle):
+    """Get seconds remaining before candle expires."""
+    remaining = candle["expires_at"] - time.time()
+    return max(0, remaining)
