@@ -92,3 +92,7 @@ pool = redis.ConnectionPool(host="localhost", port=6379, db=0, max_connections=5
   the migration much simpler than a rewrite would have been.
 - Sometimes the "simple" solution (SQLite) is the right starting point.
   You learn what you need by hitting its limits.
+
+## Rate Limiting Needed
+
+Someone lit 500 candles in 2 minutes. Need to add rate limiting.
