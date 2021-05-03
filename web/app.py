@@ -2,37 +2,52 @@
 Digital-Candle web server.
 
 Flask + SocketIO server for real-time vigil candles.
+People light candles as a form of presence and solidarity.
+Everyone watching a vigil sees new candles appear in real time.
 """
 
 import argparse
+import time
 import sys
 import os
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from candle.candle import create_candle
-from candle.vigil import create_vigil, get_themes
-from candle.store_sqlite import (
-    init_db, save_vigil, get_vigil, list_vigils,
-    save_candle, get_active_candles,
-)
+from candle.candle import create_candle, is_expired, format_dedication
+from candle.vigil import create_vigil, get_themes, update_stats, increment_total, format_stats
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "digital-candle-secret"
 
-socketio = SocketIO(app, async_mode="eventlet")
+socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
 
-# Track presence per vigil
+# Storage backend -- set by command line argument
+store = None
+
+# Track presence per vigil room
 presence = {}
+
+
+def get_store(store_type):
+    """Import and initialize the selected storage backend."""
+    if store_type == "redis":
+        from candle import store_redis
+        store_redis.init_db()
+        return store_redis
+    else:
+        from candle import store_sqlite
+        store_sqlite.init_db()
+        return store_sqlite
 
 
 @app.route("/")
 def index():
     """Show the main page with active vigils."""
-    vigils = list_vigils()
+    vigils = store.list_vigils()
     return render_template("index.html", vigils=vigils, themes=get_themes())
 
 
@@ -42,24 +57,41 @@ def create():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         theme = request.form.get("theme", "solidarity")
+        dedication = request.form.get("dedication", "").strip()
+
         if not name:
-            return render_template("create.html", themes=get_themes(), error="Please enter a name")
-        vigil = create_vigil(name, theme)
-        save_vigil(vigil)
+            return render_template(
+                "create.html",
+                themes=get_themes(),
+                error="Please enter a name for the vigil",
+            )
+
+        vigil = create_vigil(name, theme, dedication)
+        store.save_vigil(vigil)
         return redirect(url_for("vigil_page", vigil_id=vigil["id"]))
+
     return render_template("create.html", themes=get_themes())
 
 
 @app.route("/vigil/<vigil_id>")
 def vigil_page(vigil_id):
     """Show a vigil with its candles."""
-    vigil = get_vigil(vigil_id)
+    vigil = store.get_vigil(vigil_id)
     if not vigil:
         return redirect(url_for("index"))
-    candles = get_active_candles(vigil_id)
+
+    candles = store.get_active_candles(vigil_id)
+    theme = get_themes().get(vigil.get("theme", "solidarity"), get_themes()["solidarity"])
     presence_count = len(presence.get(vigil_id, set()))
-    return render_template("index.html", vigil=vigil, candles=candles,
-                           themes=get_themes(), presence_count=presence_count)
+
+    return render_template(
+        "index.html",
+        vigil=vigil,
+        candles=candles,
+        theme=theme,
+        presence_count=presence_count,
+        themes=get_themes(),
+    )
 
 
 @socketio.on("connect")
@@ -99,12 +131,33 @@ def handle_leave_vigil(data):
 def handle_light_candle(data):
     """Handle a candle lighting request."""
     vigil_id = data.get("vigil_id")
+    dedication = data.get("dedication", "")
     if not vigil_id:
         return
+
     ip = request.remote_addr or "unknown"
-    candle = create_candle(vigil_id, ip)
-    save_candle(candle)
-    emit("candle_lit", {"candle_id": candle["id"]}, room=vigil_id)
+    candle = create_candle(vigil_id, ip, dedication)
+
+    if candle is None:
+        emit("rate_limited", {
+            "message": "Too many candles -- please wait a moment"
+        })
+        return
+
+    store.save_candle(candle)
+
+    vigil = store.get_vigil(vigil_id)
+    if vigil:
+        increment_total(vigil)
+        store.save_vigil(vigil)
+
+    display_dedication = format_dedication(dedication)
+
+    emit("candle_lit", {
+        "candle_id": candle["id"],
+        "dedication": display_dedication,
+        "expires_at": candle["expires_at"],
+    }, room=vigil_id)
 
 
 @socketio.on("disconnect")
@@ -118,14 +171,29 @@ def handle_disconnect():
         if request.sid in presence[vigil_id]:
             presence[vigil_id].discard(request.sid)
             count = len(presence[vigil_id])
-            socketio.emit("presence_update", {"count": count}, room=vigil_id)
+            if count >= 0:
+                socketio.emit(
+                    "presence_update",
+                    {"count": count},
+                    room=vigil_id,
+                )
 
 
 def parse_args():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Digital-Candle server")
-    parser.add_argument("--port", type=int, default=5000)
-    parser.add_argument("--debug", action="store_true")
+    parser = argparse.ArgumentParser(description="Digital-Candle vigil server")
+    parser.add_argument(
+        "--port", type=int, default=5000,
+        help="Port to run on (default: 5000)",
+    )
+    parser.add_argument(
+        "--debug", action="store_true",
+        help="Run in debug mode",
+    )
+    parser.add_argument(
+        "--store", choices=["sqlite", "redis"], default="redis",
+        help="Storage backend (default: redis)",
+    )
     return parser.parse_args()
 
 
@@ -136,9 +204,11 @@ if __name__ == "__main__":
     print("  Digital-Candle")
     print("  A place to light candles together")
     print("=" * 50)
+    print(f"  Store:  {args.store}")
     print(f"  Port:   {args.port}")
     print(f"  Debug:  {args.debug}")
     print("=" * 50)
 
-    init_db()
+    store = get_store(args.store)
+
     socketio.run(app, host="0.0.0.0", port=args.port, debug=args.debug)
