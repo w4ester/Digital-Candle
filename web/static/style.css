@@ -6,11 +6,17 @@
     --candle-orange: #e8912e;
     --bg-dark: #1a1a1a;
     --bg-card: #242424;
+    --bg-input: #2a2a2a;
     --text-primary: #e0e0e0;
     --text-secondary: #999;
+    --text-muted: #666;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     background: var(--bg-dark);
@@ -19,18 +25,116 @@ body {
     min-height: 100vh;
 }
 
-.container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
 
-header { text-align: center; margin-bottom: 2rem; }
-header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8rem; }
-.tagline { color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.3rem; }
+/* Header */
 
-.vigil-header { text-align: center; margin-bottom: 2rem; }
-.vigil-header h2 { color: var(--candle-gold); font-size: 1.5rem; }
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 a {
+    color: var(--candle-gold);
+    text-decoration: none;
+    font-size: 1.8rem;
+}
+
+.tagline {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-top: 0.3rem;
+}
+
+/* Vigil header */
+
+.vigil-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.vigil-header h2 {
+    color: var(--candle-gold);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.dedication {
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 0.5rem;
+}
+
+.vigil-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    align-items: center;
+}
+
+.theme-badge {
+    background: var(--bg-card);
+    color: var(--candle-gold);
+    padding: 0.2rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.85rem;
+}
+
+.presence {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.connected {
+    background: #4caf50;
+}
+
+.status-dot.reconnecting {
+    background: #999;
+}
+
+/* Light a candle section */
+
+.light-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dedication-input {
+    margin-bottom: 0.8rem;
+}
+
+.dedication-input input {
+    background: var(--bg-input);
+    border: 1px solid #444;
+    color: var(--text-primary);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 400px;
+    font-size: 0.9rem;
+}
+
+.dedication-input input:focus {
+    outline: none;
+    border-color: var(--candle-gold);
+}
 
 .light-button {
-    display: block;
-    margin: 0 auto 2rem;
     background: var(--candle-gold);
     color: #1a1a1a;
     border: none;
@@ -39,8 +143,25 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     font-weight: 600;
     border-radius: 4px;
     cursor: pointer;
+    transition: background 0.2s;
 }
-.light-button:hover { background: var(--candle-gold-light); }
+
+.light-button:hover {
+    background: var(--candle-gold-light);
+}
+
+.light-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rate-message {
+    color: var(--candle-orange);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* Candle grid */
 
 .candle-grid {
     display: grid;
@@ -48,6 +169,21 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     gap: 1.5rem;
     padding: 1rem 0;
 }
+
+@media (max-width: 768px) {
+    .candle-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .candle-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* Individual candle */
 
 .candle {
     display: flex;
@@ -61,6 +197,17 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     to { opacity: 1; transform: translateY(0); }
 }
 
+.candle.fading {
+    animation: fadeOut 2s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Flame animation -- using transform instead of box-shadow for mobile */
+
 .flame {
     width: 14px;
     height: 20px;
@@ -68,7 +215,6 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     position: relative;
     animation: flicker 0.8s ease-in-out infinite alternate;
-    box-shadow: 0 0 10px var(--candle-gold), 0 0 20px rgba(201, 162, 39, 0.3);
 }
 
 .flame-inner {
@@ -112,17 +258,54 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     border-radius: 0 0 2px 2px;
 }
 
-.vigil-list { text-align: center; }
-.vigil-list h2 { color: var(--candle-gold); margin-bottom: 1rem; }
+.candle-dedication {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-align: center;
+    margin-top: 0.3rem;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Vigil listing */
+
+.vigil-list {
+    margin-top: 1rem;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.list-header h2 {
+    color: var(--candle-gold);
+    font-size: 1.3rem;
+}
+
 .create-btn {
     background: var(--candle-gold);
     color: #1a1a1a;
     text-decoration: none;
     padding: 0.5rem 1.2rem;
     border-radius: 4px;
+    font-size: 0.9rem;
     font-weight: 600;
 }
-.vigil-cards { display: grid; gap: 1rem; margin-top: 1rem; }
+
+.create-btn:hover {
+    background: var(--candle-gold-light);
+}
+
+.vigil-cards {
+    display: grid;
+    gap: 1rem;
+}
+
 .vigil-card {
     background: var(--bg-card);
     padding: 1.2rem;
@@ -130,23 +313,133 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     text-decoration: none;
     color: var(--text-primary);
     border: 1px solid #333;
+    transition: border-color 0.2s;
 }
-.vigil-card:hover { border-color: var(--candle-gold); }
-.vigil-card h3 { color: var(--candle-gold); margin-bottom: 0.3rem; }
 
-.create-form { max-width: 500px; margin: 0 auto; text-align: left; }
-.create-form h2 { color: var(--candle-gold); margin-bottom: 1rem; }
-.form-group { margin-bottom: 1.2rem; }
-.form-group label { display: block; color: var(--text-secondary); margin-bottom: 0.4rem; }
+.vigil-card:hover {
+    border-color: var(--candle-gold);
+}
+
+.vigil-card h3 {
+    color: var(--candle-gold);
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+
+.card-dedication {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-meta {
+    display: flex;
+    gap: 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    margin-bottom: 1rem;
+}
+
+/* Create form */
+
+.create-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.create-form h2 {
+    color: var(--candle-gold);
+    margin-bottom: 0.5rem;
+}
+
+.form-description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
 .form-group input[type="text"] {
-    background: #2a2a2a;
+    background: var(--bg-input);
     border: 1px solid #444;
     color: var(--text-primary);
     padding: 0.6rem 0.8rem;
     border-radius: 4px;
     width: 100%;
+    font-size: 0.95rem;
 }
-.form-group input:focus { outline: none; border-color: var(--candle-gold); }
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: var(--candle-gold);
+}
+
+.theme-options {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.theme-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: var(--bg-input);
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #444;
+}
+
+.theme-option:hover {
+    border-color: var(--candle-gold);
+}
+
+.theme-option input[type="radio"] {
+    margin-top: 0.2rem;
+    accent-color: var(--candle-gold);
+}
+
+.theme-label strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.theme-label small {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.error-message {
+    background: #3a1a1a;
+    border: 1px solid #662222;
+    color: #e08080;
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
 .create-submit {
     background: var(--candle-gold);
     color: #1a1a1a;
@@ -157,30 +450,9 @@ header h1 a { color: var(--candle-gold); text-decoration: none; font-size: 1.8re
     border-radius: 4px;
     cursor: pointer;
     width: 100%;
+    margin-top: 0.5rem;
 }
 
-.candle.fading {
-    animation: fadeOut 2s ease-out forwards;
+.create-submit:hover {
+    background: var(--candle-gold-light);
 }
-
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-.presence {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: var(--text-secondary);
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.status-dot.connected { background: #4caf50; }
-.status-dot.reconnecting { background: #999; }
