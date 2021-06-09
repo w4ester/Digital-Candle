@@ -38,3 +38,55 @@ Started with SQLite. Hit locking problems with 5 concurrent users. Migrated to R
 
 ### Rate Limiting
 After someone lit 500 candles in 2 minutes, added rate limiting: max 10 candles per minute per IP address.
+
+## Project Structure
+
+```
+Digital-Candle/
+  candle/
+    candle.py          -- candle state: create, light, expiration, rate limiting
+    vigil.py           -- vigil management: create, themes, dedications, stats
+    store_sqlite.py    -- SQLite backend (original, still works as fallback)
+    store_redis.py     -- Redis backend (default, handles concurrent access)
+  web/
+    app.py             -- Flask + SocketIO server, routes, events
+    templates/
+      index.html       -- vigil page with candle grid and presence counter
+      create.html      -- create vigil form with themes
+    static/
+      style.css        -- dark theme, candle gold accents, flame animations
+      candle.js         -- client SocketIO, flame triggers, presence updates
+  experiments/
+    sqlite_to_redis_notes.md   -- migration pain and solutions
+    socketio_scaling_notes.md  -- connection limits, reconnection, pub/sub
+  requirements.txt
+  deploy.sh
+```
+
+## Quick Start
+
+### With Redis (recommended)
+```bash
+# Install Redis
+sudo apt-get install redis-server
+sudo systemctl start redis
+
+# Install dependencies
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Run
+python web/app.py --store redis --port 5000
+```
+
+### With SQLite (no Redis needed)
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+python web/app.py --store sqlite --port 5000
+```
+
+Open http://localhost:5000 to see active vigils or create a new one.
