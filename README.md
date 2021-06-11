@@ -90,3 +90,12 @@ python web/app.py --store sqlite --port 5000
 ```
 
 Open http://localhost:5000 to see active vigils or create a new one.
+
+## Connections
+
+This project is part of a series exploring how technology can signal presence and build community connection:
+
+- **Share-Your-Light** (2018) -- NeoPixel garments made light wearable. Digital-Candle makes light shareable. When supply chains made hardware impossible, the light went digital.
+- **Window-Beacon** (2020) -- Amber beacon in a windowsill. Digital candle in a browser. Same signal -- "I am here."
+- **SafeChat-Router** (2020) -- Taught that simple fallbacks beat complex systems. SQLite was the simple fallback. Redis was necessary growth. Same lesson: start simple, scale when the pain is real.
+- **Smart Pillbox** (2017) -- Reminded you to take meds. Digital-Candle reminds you that someone is thinking of you.
