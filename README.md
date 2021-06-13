@@ -99,3 +99,19 @@ This project is part of a series exploring how technology can signal presence an
 - **Window-Beacon** (2020) -- Amber beacon in a windowsill. Digital candle in a browser. Same signal -- "I am here."
 - **SafeChat-Router** (2020) -- Taught that simple fallbacks beat complex systems. SQLite was the simple fallback. Redis was necessary growth. Same lesson: start simple, scale when the pain is real.
 - **Smart Pillbox** (2017) -- Reminded you to take meds. Digital-Candle reminds you that someone is thinking of you.
+
+## Lessons Learned
+
+1. **Supply chain is a design constraint.** When hardware is unavailable, the core idea has to survive without it. The light was never about LEDs -- it was about presence.
+
+2. **SQLite breaks under concurrent WebSocket writes.** WAL mode helps but does not solve the fundamental problem. If your app has real-time concurrent writes, plan for something beyond SQLite.
+
+3. **Redis TTL is perfect for ephemeral data.** Candles that expire on their own, with no background cleanup job, using Redis key expiration. The simplest solution to a problem I was overcomplicating.
+
+4. **Track presence with sets, not counters.** Counters can go negative on disconnect edge cases. Sets cannot. `discard()` on a set is a no-op if the element is not there.
+
+5. **Exponential backoff is not optional.** Immediate reconnection on disconnect causes retry storms that can take down the server. Let Socket.IO handle reconnection with its built-in backoff.
+
+6. **CSS animations on mobile need `transform`, not `box-shadow`.** Box-shadow animations cause frame drops on mobile Safari. Transform-based animations are GPU-accelerated and smooth.
+
+7. **Rate limiting comes from real abuse.** Did not add it until someone actually lit 500 candles in 2 minutes. Community tools need community protections.
