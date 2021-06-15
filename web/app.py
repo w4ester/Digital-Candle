@@ -14,6 +14,7 @@ import os
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
+# Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from candle.candle import create_candle, is_expired, format_dedication
@@ -29,6 +30,7 @@ socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
 store = None
 
 # Track presence per vigil room
+# { vigil_id: set(session_ids) }
 presence = {}
 
 
@@ -43,6 +45,10 @@ def get_store(store_type):
         store_sqlite.init_db()
         return store_sqlite
 
+
+# ============================================================
+# Flask Routes
+# ============================================================
 
 @app.route("/")
 def index():
@@ -94,6 +100,26 @@ def vigil_page(vigil_id):
     )
 
 
+@app.route("/api/vigil/<vigil_id>/stats")
+def vigil_stats(vigil_id):
+    """API endpoint for vigil statistics."""
+    vigil = store.get_vigil(vigil_id)
+    if not vigil:
+        return jsonify({"error": "vigil not found"}), 404
+
+    candles = store.get_active_candles(vigil_id)
+    current_presence = len(presence.get(vigil_id, set()))
+    update_stats(vigil, candles, current_presence)
+
+    stats = format_stats(vigil)
+    stats["active_watchers"] = current_presence
+    return jsonify(stats)
+
+
+# ============================================================
+# SocketIO Events
+# ============================================================
+
 @socketio.on("connect")
 def handle_connect():
     """Handle new WebSocket connection."""
@@ -106,10 +132,14 @@ def handle_join_vigil(data):
     vigil_id = data.get("vigil_id")
     if not vigil_id:
         return
+
     join_room(vigil_id)
+
+    # Track presence
     if vigil_id not in presence:
         presence[vigil_id] = set()
     presence[vigil_id].add(request.sid)
+
     count = len(presence[vigil_id])
     emit("presence_update", {"count": count}, room=vigil_id)
 
@@ -120,7 +150,10 @@ def handle_leave_vigil(data):
     vigil_id = data.get("vigil_id")
     if not vigil_id:
         return
+
     leave_room(vigil_id)
+
+    # Update presence
     if vigil_id in presence:
         presence[vigil_id].discard(request.sid)
         count = len(presence[vigil_id])
@@ -132,10 +165,13 @@ def handle_light_candle(data):
     """Handle a candle lighting request."""
     vigil_id = data.get("vigil_id")
     dedication = data.get("dedication", "")
+
     if not vigil_id:
         return
 
+    # Get client IP for rate limiting
     ip = request.remote_addr or "unknown"
+
     candle = create_candle(vigil_id, ip, dedication)
 
     if candle is None:
@@ -144,15 +180,19 @@ def handle_light_candle(data):
         })
         return
 
+    # Save candle
     store.save_candle(candle)
 
+    # Update vigil stats
     vigil = store.get_vigil(vigil_id)
     if vigil:
         increment_total(vigil)
         store.save_vigil(vigil)
 
+    # Format dedication for display
     display_dedication = format_dedication(dedication)
 
+    # Broadcast to everyone in the vigil room
     emit("candle_lit", {
         "candle_id": candle["id"],
         "dedication": display_dedication,
@@ -167,10 +207,12 @@ def handle_disconnect():
     Clean up presence tracking. Important to get this right --
     browser tab close does not always fire leave_vigil.
     """
+    # Remove from all vigil presence sets
     for vigil_id in list(presence.keys()):
         if request.sid in presence[vigil_id]:
             presence[vigil_id].discard(request.sid)
             count = len(presence[vigil_id])
+            # Only emit if there are still people watching
             if count >= 0:
                 socketio.emit(
                     "presence_update",
@@ -178,6 +220,10 @@ def handle_disconnect():
                     room=vigil_id,
                 )
 
+
+# ============================================================
+# Startup
+# ============================================================
 
 def parse_args():
     """Parse command line arguments."""

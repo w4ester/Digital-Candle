@@ -14,9 +14,14 @@
         </header>
 
         {% if vigil %}
+        <!-- Vigil view -->
         <div class="vigil-header">
             <h2>{{ vigil.name }}</h2>
+            {% if vigil.dedication %}
+            <p class="dedication">{{ vigil.dedication }}</p>
+            {% endif %}
             <div class="vigil-meta">
+                <span class="theme-badge">{{ theme.name if theme else 'Solidarity' }}</span>
                 <span class="presence">
                     <span class="status-dot connected" id="status-dot"></span>
                     <span id="presence-count">{{ presence_count or 0 }}</span> watching
@@ -24,8 +29,16 @@
             </div>
         </div>
 
-        <button id="light-btn" class="light-button">Light a Candle</button>
+        <!-- Light a candle -->
+        <div class="light-section">
+            <div class="dedication-input">
+                <input type="text" id="dedication" placeholder="Add a dedication (optional)" maxlength="100">
+            </div>
+            <button id="light-btn" class="light-button">Light a Candle</button>
+            <p id="rate-msg" class="rate-message" style="display:none;"></p>
+        </div>
 
+        <!-- Candle grid -->
         <div class="candle-grid" id="candle-grid">
             {% for candle in candles %}
             <div class="candle" data-id="{{ candle.id }}">
@@ -33,6 +46,9 @@
                     <div class="flame-inner"></div>
                 </div>
                 <div class="wax"></div>
+                {% if candle.dedication %}
+                <div class="candle-dedication">{{ candle.dedication }}</div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -44,6 +60,7 @@
         </script>
 
         {% else %}
+        <!-- Vigil listing -->
         <div class="vigil-list">
             <div class="list-header">
                 <h2>Active Vigils</h2>
@@ -55,7 +72,13 @@
                 {% for v in vigils %}
                 <a href="/vigil/{{ v.id }}" class="vigil-card">
                     <h3>{{ v.name }}</h3>
-                    <span>{{ v.candle_count or 0 }} candles</span>
+                    {% if v.dedication %}
+                    <p class="card-dedication">{{ v.dedication }}</p>
+                    {% endif %}
+                    <div class="card-meta">
+                        <span class="card-theme">{{ v.theme }}</span>
+                        <span class="card-candles">{{ v.candle_count or 0 }} candles</span>
+                    </div>
                 </a>
                 {% endfor %}
             </div>
